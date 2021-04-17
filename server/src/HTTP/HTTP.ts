@@ -1,17 +1,18 @@
 import net from "net";
-import { HTTPHeaders } from "./HTTPHeaders";
 import { HTTPSocket } from "./HTTPSocket";
 import path from "path";
+import fs from "fs";
 
 const HTTP_METHODS_REGEX = /^(?:GET|POST|HEAD)/i
 export type HTTPMethods = "GET" | "POST" | "HEAD";
 
-export type ResponseCallback = (data: Buffer, socket: HTTPSocket, headers: Record<string, string>) => void;
+export type GetResponseCallback = (method: HTTPMethods, socket: HTTPSocket, headers: Record<string, string>) => void;
+export type PostResponseCallback = (method: HTTPMethods, socket: HTTPSocket, headers: Record<string, string>, data: Buffer) => void;
 
 export interface RegisteredMethodObj {
     method: HTTPMethods;
     path: string;
-    callback: ResponseCallback;
+    callback: GetResponseCallback | PostResponseCallback;
 }
 
 export class HTTPServer {
@@ -27,9 +28,7 @@ export class HTTPServer {
         this.server.on("connection", (socket: net.Socket) => {
             let httpSocket = new HTTPSocket(socket);
             this.sockets.push(httpSocket);
-            socket.on("data", this.onData.bind(this, httpSocket));
-
-            console.log(this.sockets.length);
+            httpSocket.on("data", this.onData.bind(this));
         });
     }
 
@@ -55,24 +54,52 @@ export class HTTPServer {
                 }
             }
 
+            let postData = Buffer.alloc(0);
+            if (method === "POST" && Object.prototype.hasOwnProperty.call(headers, "Content-Length")) {
+                const startOfData = data.indexOf(Buffer.from("\r\n\r\n")) + 4;
+                postData = data.slice(startOfData, startOfData + Number(headers["Content-Length"]));
+            }
+
             if (handler !== undefined) {
-                handler.callback(data, socket, headers);
+                if (handler.method === "GET" && method === "GET" || method === "HEAD") {
+                    (handler.callback as GetResponseCallback)(method, socket, headers);
+                } else if (handler.method === "POST" && method === "POST") {
+                    (handler.callback as PostResponseCallback)(method, socket, headers, postData);
+                } else {
+                    socket.write(0, {}, 403);
+                }
             } else {
-                this.serveStaticPage(path, socket, headers);
+                if (method === "GET" || method === "HEAD") {
+                    this.serveStaticPage(method, path, socket, headers);
+                } else {
+                    socket.write(0, {}, 403);
+                }
             }
         }
     };
 
-    private serveStaticPage(requestedPath: string, socket: HTTPSocket, headers: Record<string, unknown>): void {
-        console.log(requestedPath);
-        socket.write(Buffer.alloc(0), {}, 404);
+    private serveStaticPage(method: HTTPMethods, requestedPath: string, socket: HTTPSocket, headers: Record<string, unknown>): void {
+        if (this.staticPath === "") {
+            socket.write(0, {}, 404);
+        }
+
+        const filePath = (path.join(this.staticPath, requestedPath));
+        console.log(filePath);
+        let data: Buffer | number;
+        if (method === "HEAD") {
+            let fileStats = fs.statSync(filePath);
+            data = fileStats.size;
+        } else {
+            data = fs.readFileSync(filePath);
+        }
+        socket.write(data, {}, 200);
     }
 
     static(pathToServe: string) {
         this.staticPath = path.resolve(pathToServe);
     }
 
-    get(path: string, callback: ResponseCallback) {
+    get(path: string, callback: GetResponseCallback) {
         this.registeredMethods.push({
             method: "GET",
             path,
@@ -80,7 +107,11 @@ export class HTTPServer {
         });
     }
 
-    post(path: string, callback: ResponseCallback) {
-
+    post(path: string, callback: PostResponseCallback) {
+        this.registeredMethods.push({
+            method: "POST",
+            path,
+            callback
+        });
     }
 }
