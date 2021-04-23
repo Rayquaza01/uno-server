@@ -3,7 +3,7 @@ import { EventEmitter } from "events";
 
 export type DataListenerCallback = (buf: Buffer) => void;
 
-export const HTTP_REASON_PHRASE: Record<number, string> = {
+const HTTP_REASON_PHRASE: Record<number, string> = {
     101: "Switching Protocol",
     200: "OK",
     400: "Bad Request",
@@ -16,6 +16,7 @@ export const HTTP_REASON_PHRASE: Record<number, string> = {
 
 export declare interface HTTPSocket {
     on(event: "data", listener: (socket: HTTPSocket, data: Buffer) => void): this;
+    on(event: "close", listener: (hadError: boolean) => void): this;
 }
 
 export class HTTPSocket extends EventEmitter {
@@ -27,6 +28,10 @@ export class HTTPSocket extends EventEmitter {
 
         this.socket.on("data", (data: Buffer) => {
             this.emit("data", this, data);
+        });
+
+        this.socket.on("close", (hadError: boolean) => {
+            this.emit("close", this, hadError);
         });
     }
 
@@ -47,8 +52,7 @@ export class HTTPSocket extends EventEmitter {
 
         let responseBuf: Buffer;
         if (typeof data === "number") {
-            responseBuf = Buffer.alloc(responseStr.length);
-            responseBuf.set(Buffer.from(responseStr, "utf-8"));
+            responseBuf = Buffer.from(responseStr, "utf-8");
         } else {
             responseBuf = Buffer.alloc(responseStr.length + data.length);
             responseBuf.set(Buffer.from(responseStr, "utf-8"));

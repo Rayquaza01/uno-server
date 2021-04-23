@@ -15,6 +15,26 @@ export interface RegisteredMethodObj {
     callback: GetResponseCallback | PostResponseCallback;
 }
 
+export const MIME_TYPES = {
+    ".html": "text/html",
+    ".js": "text/javascript",
+    ".css": "text/css",
+    ".json": "application/json",
+    ".png": "image/png",
+    ".jpg": "image/jpg",
+    ".gif": "image/gif",
+    ".svg": "image/svg+xml",
+    ".wav": "audio/wav",
+    ".mp4": "video/mp4",
+    ".woff": "application/font-woff",
+    ".ttf": "application/font-ttf",
+    ".eot": "application/vnd.ms-fontobject",
+    ".otf": "application/font-otf",
+    ".wasm": "application/wasm",
+    "*": "application/octet-stream"
+};
+
+
 export class HTTPServer {
     private server: net.Server;
     private staticPath: string;
@@ -29,6 +49,11 @@ export class HTTPServer {
             let httpSocket = new HTTPSocket(socket);
             this.sockets.push(httpSocket);
             httpSocket.on("data", this.onData.bind(this));
+            httpSocket.on("close", () => {
+                this.sockets.splice(this.sockets.indexOf(httpSocket), 1);
+
+                httpSocket.removeAllListeners();
+            });
         });
     }
 
@@ -79,20 +104,39 @@ export class HTTPServer {
     };
 
     private serveStaticPage(method: HTTPMethods, requestedPath: string, socket: HTTPSocket, headers: Record<string, unknown>): void {
-        if (this.staticPath === "") {
+        if (requestedPath === "/") {
+            requestedPath = "/index.html";
+        }
+        const filePath = (path.join(this.staticPath, requestedPath));
+
+        if (this.staticPath === "" || !fs.existsSync(filePath)) {
             socket.write(0, {}, 404);
+            return;
         }
 
-        const filePath = (path.join(this.staticPath, requestedPath));
         console.log(filePath);
         let data: Buffer | number;
         if (method === "HEAD") {
-            let fileStats = fs.statSync(filePath);
+            const fileStats = fs.statSync(filePath);
             data = fileStats.size;
         } else {
             data = fs.readFileSync(filePath);
         }
-        socket.write(data, {}, 200);
+
+        let mimeType: string;
+        for (let [extension, type] of Object.entries(MIME_TYPES)) {
+            if (filePath.endsWith(extension)) {
+                mimeType = type;
+                break;
+            }
+        }
+        mimeType ??= MIME_TYPES["*"];
+
+        socket.write(
+            data,
+            { "Content-Type": mimeType },
+            200
+        );
     }
 
     static(pathToServe: string) {
