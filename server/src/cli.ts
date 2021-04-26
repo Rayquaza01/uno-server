@@ -36,11 +36,6 @@ http.post("/game/register", (socket, _headers, body) => {
     const player: Player = { name: bodyJSON.name, hand: [] };
     game.addPlayer(player.name);
 
-    // if a player disconnects from the game, reset the game
-    socket.on("close", () => {
-        game.resetGame();
-    });
-
     socket.write(JSON.stringify(player), { "Content-Type": MIME_TYPES[".json"] }, 200);
 });
 
