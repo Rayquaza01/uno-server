@@ -5,3 +5,7 @@ export enum CardColors {
     BLUE,
     WILD
 }
+
+export function isCardColors(o: any): o is CardColors {
+    return typeof o === "number" && o in CardColors;
+}

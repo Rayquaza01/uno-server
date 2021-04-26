@@ -15,3 +15,7 @@ export enum CardNumbers {
     ADD_4,
     WILD
 }
+
+export function isCardNumbers(o: any): o is CardNumbers {
+    return typeof o === "number" && o in CardNumbers;
+}

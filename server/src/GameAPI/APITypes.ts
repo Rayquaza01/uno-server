@@ -1,9 +1,13 @@
-import { Card } from "../Uno/Card";
+import { Card, isCard } from "../Uno/Card";
 import { CardColors } from "../Uno/CardColors";
-import { Player } from "../Uno/Player";
+import { isPlayer, Player } from "../Uno/Player";
 
 export interface GenericResponse {
     success: boolean
+}
+
+export function isGenericResponse(o: any): o is GenericResponse {
+    return typeof o.success === "boolean";
 }
 
 export interface RegisterBody {
@@ -18,6 +22,10 @@ export function isRegisterBody(o: any): o is RegisterBody {
 
 export interface RegisterResponse extends Player {
     id: number
+}
+
+export function isRegisterResponse(o: any): o is RegisterResponse {
+    return typeof o.id === "number" && isPlayer(o);
 }
 
 export interface DiscardBody {
@@ -39,13 +47,25 @@ export enum DiscardResposeReason {
     INVALID_DISCARD
 }
 
+export function isDiscardResponseReason(o: any): o is DiscardResposeReason {
+    return typeof o === "number" && o in DiscardResposeReason;
+}
+
 export interface DiscardResponse extends GenericResponse {
     reason: DiscardResposeReason
+}
+
+export function isDiscardResponse(o: any): o is DiscardResponse {
+    return isDiscardResponseReason(o.reason) && isGenericResponse(o);
 }
 
 export interface PlayerInfo {
     name: string
     hand: number
+}
+
+export function isPlayerInfo(o: any): o is PlayerInfo {
+    return typeof o.name === "string" && typeof o.hand === "number";
 }
 
 export interface GameState {
@@ -55,4 +75,14 @@ export interface GameState {
     winner: number | null
     discard: Card
     players: number[]
+}
+
+export function isGameState(o: any): o is GameState {
+    return typeof o.lastModified === "number" &&
+        typeof o.currentPlayer === "number" &&
+        typeof o.gameRunning === "boolean" &&
+        (o.winner === null || typeof o.winner === "number") &&
+        isCard(o.discard) &&
+        Array.isArray(o.players) &&
+        o.players.every((i: any) => typeof i === "number");
 }
