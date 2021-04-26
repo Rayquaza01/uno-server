@@ -12,13 +12,13 @@ const HTTP_REASON_PHRASE: Record<number, string> = {
     418: "I'm a teapot",
     500: "Internal Server Error",
     501: "Not Implemented"
-}
+};
 
 /**
  * Convert an HTTP status code to a reason phrase
  * @param status The status code to lookup
  */
-export function getReasonString(status: number) {
+export function getReasonString(status: number): string {
     return status.toString() + " " + HTTP_REASON_PHRASE[status];
 }
 
@@ -67,7 +67,7 @@ export class HTTPSocket extends EventEmitter {
         let responseStr = "HTTP/1.1 " + getReasonString(status) + "\r\n";
 
         // add each header value
-        for (let [key, value] of Object.entries(headers)) {
+        for (const [key, value] of Object.entries(headers)) {
             responseStr += key + ": " + value + "\r\n";
         }
         responseStr += "Date: " + new Date().toUTCString() + "\r\n";

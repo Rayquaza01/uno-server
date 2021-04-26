@@ -3,7 +3,7 @@ import { HTTPSocket, getReasonString } from "./HTTPSocket";
 import path from "path";
 import fs from "fs";
 
-const HTTP_METHODS_REGEX = /^(?:GET|POST|HEAD)/i
+const HTTP_METHODS_REGEX = /^(?:GET|POST|HEAD)/i;
 export type HTTPMethods = "GET" | "POST" | "HEAD";
 
 export type GetResponseCallback = (socket: HTTPSocket, headers: Record<string, string>) => void;
@@ -56,7 +56,7 @@ export class HTTPServer {
         // when new connections come in
         this.server.on("connection", (socket: net.Socket) => {
             // wrap socket in http socket class
-            let httpSocket = new HTTPSocket(socket);
+            const httpSocket = new HTTPSocket(socket);
             this.sockets.push(httpSocket);
 
             // add on data listener
@@ -79,27 +79,27 @@ export class HTTPServer {
      */
     private onData(socket: HTTPSocket, data: Buffer): void {
         // convert data to string to parse at beginning
-        let dataString = data.toString("utf-8").trim();
+        const dataString = data.toString("utf-8").trim();
 
         // if request is a HEAD, GET, or POST
         if (HTTP_METHODS_REGEX.test(dataString)) {
-            let rows = dataString.split("\r\n");
+            const rows = dataString.split("\r\n");
 
             // get method, path, and HTTP version from first row
             // version is unused, currently
-            let [method, path, version] = rows[0].split(" ");
+            const [method, path] = rows[0].split(" ");
             // split the querystring from the path
-            let [realPath, queryString] = path.split("?");
+            const [realPath, queryString] = path.split("?");
 
             // find the handler if it exists
             // Must have the same method and path as the current request
             // OR handler method must be GET and method must be HEAD
-            let handler = this.registeredMethods.find(item => {
+            const handler = this.registeredMethods.find(item => {
                 return (item.method === method || (item.method === "GET" && method === "HEAD")) && item.path === realPath;
             });
 
             // object for storing headers
-            let headers: Record<string, string> = {};
+            const headers: Record<string, string> = {};
             headers.searchParams = queryString;
             headers.method = method;
             headers.path = path;
@@ -111,7 +111,7 @@ export class HTTPServer {
 
                 // add to headers object, matching the pattern:
                 // Key: Value
-                let match = rows[i].match(/(.+): (.+)/);
+                const match = rows[i].match(/(.+): (.+)/);
                 if (match?.length === 3) {
                     headers[match[1]] = match[2];
                 }
@@ -139,7 +139,7 @@ export class HTTPServer {
             } else {
                 // if no handler and GET or HEAD request, serve file
                 if (method === "GET" || method === "HEAD") {
-                    this.serveStaticPage(method, path, socket, headers);
+                    this.serveStaticPage(method, path, socket);
                 } else {
                     socket.write(getReasonString(403), {}, 403);
                 }
@@ -149,7 +149,7 @@ export class HTTPServer {
             // return 501 Not Implemented
             socket.write(getReasonString(501), {}, 501);
         }
-    };
+    }
 
     /**
      * Serves a static webpage from a file
@@ -158,7 +158,7 @@ export class HTTPServer {
      * @param socket The client that made the request
      * @param headers The headers of the request
      */
-    private serveStaticPage(method: HTTPMethods, requestedPath: string, socket: HTTPSocket, headers: Record<string, unknown>): void {
+    private serveStaticPage(method: HTTPMethods, requestedPath: string, socket: HTTPSocket): void {
         // default / to index.html
         if (requestedPath === "/") {
             requestedPath = "/index.html";
@@ -184,7 +184,7 @@ export class HTTPServer {
 
         // find the mimetype of the file from the extension
         let mimeType: string;
-        for (let [extension, type] of Object.entries(MIME_TYPES)) {
+        for (const [extension, type] of Object.entries(MIME_TYPES)) {
             if (filePath.endsWith(extension)) {
                 mimeType = type;
                 break;
@@ -206,7 +206,7 @@ export class HTTPServer {
      * Set the path to be served by the server
      * @param pathToServe The path on the filesystem to serve
      */
-    static(pathToServe: string) {
+    static(pathToServe: string): void {
         this.staticPath = path.resolve(pathToServe);
     }
 
@@ -215,7 +215,7 @@ export class HTTPServer {
      * @param path The path that will be requested
      * @param callback The callback that will run when the path is requested
      */
-    get(path: string, callback: GetResponseCallback) {
+    get(path: string, callback: GetResponseCallback): void {
         this.registeredMethods.push({
             method: "GET",
             path,
@@ -228,11 +228,15 @@ export class HTTPServer {
      * @param path The path that will be requested
      * @param callback The callback that will run when the path is requested
      */
-    post(path: string, callback: PostResponseCallback) {
+    post(path: string, callback: PostResponseCallback): void {
         this.registeredMethods.push({
             method: "POST",
             path,
             callback
         });
+    }
+
+    listen(port: number, ip: string): void {
+        this.server.listen(port, ip);
     }
 }

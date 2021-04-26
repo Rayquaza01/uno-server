@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "build": "tsc"
+    "build": "tsc",
+    "watch": "tsc --watch",
+    "start": "node ./dist/index.js"
   },
   "author": "Joe Jarvis",
   "license": "MIT",
