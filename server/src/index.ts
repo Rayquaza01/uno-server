@@ -1,6 +1,6 @@
 import net from "net";
 import { HTTPServer, MIME_TYPES } from "./HTTP/HTTP";
-import { getReasonString, HTTPSocket } from "./HTTP/HTTPSocket";
+import { getReasonString } from "./HTTP/HTTPSocket";
 import { UnoGame } from "./Uno/Game";
 import { Player } from "./Uno/Player";
 import * as APITypes from "./GameAPI/APITypes";
@@ -10,13 +10,13 @@ const game = new UnoGame();
 const server = net.createServer();
 const http = new HTTPServer(server);
 
-http.get("/game", (socket: HTTPSocket, headers: Record<string, string>) => {
+http.get("/game", (socket) => {
     socket.write(JSON.stringify({version: 1}), {"Content-Type": MIME_TYPES[".json"]}, 200);
 });
 
 // Register a player to the game
 // Gives the player an ID number that they can use once the game is started
-http.post("/game/register", (socket, headers, body) => {
+http.post("/game/register", (socket, _headers, body) => {
     let bodyJSON: APITypes.RegisterBody;
     try {
         // try to parse JSON, will throw error if fails to parse
@@ -36,17 +36,22 @@ http.post("/game/register", (socket, headers, body) => {
     const player: Player = { name: bodyJSON.name, hand: [] };
     game.addPlayer(player.name);
 
+    // if a player disconnects from the game, reset the game
+    socket.on("close", () => {
+        game.resetGame();
+    });
+
     socket.write(JSON.stringify(player), { "Content-Type": MIME_TYPES[".json"] }, 200);
 });
 
 // Forces the game to start
-http.post("/game/start", (socket, headers, body) => {
+http.post("/game/start", (socket) => {
     game.startGame();
     socket.write(JSON.stringify({ success: true }), { "Content-Type": MIME_TYPES[".json"] }, 200);
-})
+});
 
 // Forces the game to reset
-http.post("/game/reset", (socket, headers, body) => {
+http.post("/game/reset", (socket) => {
     game.resetGame();
     socket.write(JSON.stringify({ success: true }), {}, 200);
 });
@@ -73,7 +78,7 @@ http.get("/game/players", (socket, headers) => {
 // Discards a card from a player
 // Player's ID must be included in POST body
 // A response will include the success status and a reason for failure (if applicable)
-http.post("/game/discard", (socket, headers, body) => {
+http.post("/game/discard", (socket, _headers, body) => {
     let bodyJSON: APITypes.DiscardBody;
     try {
         bodyJSON = JSON.parse(body.toString("utf-8"));
@@ -124,7 +129,7 @@ http.post("/game/discard", (socket, headers, body) => {
 });
 
 // Request the game's status
-http.get("/game/status", (socket, headers) => {
+http.get("/game/status", (socket) => {
     const status = game.getGameState();
     socket.write(JSON.stringify(status), { "Content-Type": MIME_TYPES[".json"] }, 200);
 });
