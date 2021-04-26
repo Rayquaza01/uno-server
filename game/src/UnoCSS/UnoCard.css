@@ -1,0 +1,15 @@
+.card.red > .colorMe {
+    fill: #FF5555;
+}
+
+.card.yellow > .colorMe {
+    fill: #FFAA00;
+}
+
+.card.green > .colorMe {
+    fill: #00AA00;
+}
+
+.card.blue > .colorMe {
+    fill: #5555FF;
+}
