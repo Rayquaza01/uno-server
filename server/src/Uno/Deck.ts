@@ -30,15 +30,15 @@ export class UnoDeck {
         this.deck = [];
         this.discardDeck = [];
 
-        let colors = [CardColors.RED, CardColors.YELLOW, CardColors.GREEN, CardColors.BLUE];
-        let numbers = [CardNumbers.ONE, CardNumbers.TWO, CardNumbers.THREE, CardNumbers.FOUR, CardNumbers.FIVE, CardNumbers.SIX, CardNumbers.SEVEN, CardNumbers.EIGHT, CardNumbers.NINE, CardNumbers.SKIP, CardNumbers.REVERSE, CardNumbers.ADD_2];
+        const colors = [CardColors.RED, CardColors.YELLOW, CardColors.GREEN, CardColors.BLUE];
+        const numbers = [CardNumbers.ONE, CardNumbers.TWO, CardNumbers.THREE, CardNumbers.FOUR, CardNumbers.FIVE, CardNumbers.SIX, CardNumbers.SEVEN, CardNumbers.EIGHT, CardNumbers.NINE, CardNumbers.SKIP, CardNumbers.REVERSE, CardNumbers.ADD_2];
 
-        for (let color of colors) {
+        for (const color of colors) {
             this.deck.push({ color, number: CardNumbers.ZERO });
             this.deck.push({ color: CardColors.WILD, number: CardNumbers.WILD });
             this.deck.push({ color: CardColors.WILD, number: CardNumbers.ADD_4 });
             for (let i = 0; i < 2; i++) {
-                for (let number of numbers) {
+                for (const number of numbers) {
                     this.deck.push({ color, number });
                 }
             }
@@ -71,8 +71,8 @@ export class UnoDeck {
         // fisher yates shuffle
         for (let i = 0; i < (this.deck.length - 2); i++) {
             // random number from current index to deck length
-            let j = Math.floor(Math.random() * (this.deck.length - i) + i);
-            let tmp = this.deck[i];
+            const j = Math.floor(Math.random() * (this.deck.length - i) + i);
+            const tmp = this.deck[i];
             this.deck[i] = this.deck[j];
             this.deck[j] = tmp;
         }
@@ -84,9 +84,6 @@ export class UnoDeck {
      * @returns true if the card can be discarded, false if the card is not valid
      */
     discard(c: Card): boolean {
-        // get top of discard deck
-        // if discard deck is empty, set top to c
-        const top = this.discardDeck[this.discardDeck.length - 1] ?? c;
         // check if card can be discarded
         // card can be discarded if:
         //  Colors match
