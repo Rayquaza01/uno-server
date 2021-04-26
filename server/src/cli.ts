@@ -129,6 +129,15 @@ http.get("/game/status", (socket) => {
     socket.write(JSON.stringify(status), { "Content-Type": MIME_TYPES[".json"] }, 200);
 });
 
-http.static("../game/dist");
+if (process.argv.length < 4) {
+    console.log("Process needs two arguments: Static folder and port");
+    console.log("Example:");
+    console.log("    " + process.argv[0] + " " + "./dist 5000");
+    process.exit();
+}
 
-server.listen(5000, "127.0.0.1");
+console.log(process.argv);
+
+http.static(process.argv[2]);
+
+server.listen(Number(process.argv[3]), "127.0.0.1");

@@ -2,10 +2,12 @@
   "name": "uno-server-game",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "watch": "tsc --watch",
+    "build:module": "tsc",
+    "watch:module": "tsc --watch",
+    "build:cli": "webpack --config webpack.config.js --mode=production",
+    "watch:cli": "webpack --config webpack.config.js --mode=development --watch",
     "start": "node ./dist/index.js"
   },
   "author": "Joe Jarvis",
@@ -14,8 +16,15 @@
     "@types/node": "^14.14.41",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
+    "clean-webpack-plugin": "^4.0.0-alpha.0",
     "eslint": "^7.25.0",
-    "typescript": "^4.2.4"
+    "terser-webpack-plugin": "^5.1.1",
+    "ts-loader": "^9.1.1",
+    "typescript": "^4.2.4",
+    "webpack": "^5.35.1",
+    "webpack-cli": "^4.6.0"
   },
-  "dependencies": {}
+  "bin": {
+    "uno-server": "./bin/uno-server.js"
+  }
 }
