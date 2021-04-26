@@ -11,12 +11,13 @@ export class UnoDeck {
     /** The current discard pile */
     private discardDeck: Card[] = [];
 
-    private topColor: CardColors;
-    private topNumber: CardNumbers;
+    private discardTop: Card;
 
     constructor() {
-        this.topColor = CardColors.WILD;
-        this.topNumber = CardNumbers.WILD;
+        this.discardTop = {
+            color: CardColors.WILD,
+            number: CardNumbers.WILD
+        };
 
         this.reset();
         this.shuffle();
@@ -92,7 +93,7 @@ export class UnoDeck {
         //  Numbers match
         //  Color is WILD
         //  Top color is WILD
-        if (c.color === this.topColor || c.number === this.topNumber || c.color === CardColors.WILD || this.topColor === CardColors.WILD) {
+        if (c.color === this.discardTop.color || c.number === this.discardTop.number || c.color === CardColors.WILD || this.discardTop.color === CardColors.WILD) {
             this.discardDeck.push(c);
             this.updateTop(c.color, c.number);
             return true;
@@ -101,7 +102,10 @@ export class UnoDeck {
     }
 
     updateTop(color: CardColors, number: CardNumbers): void {
-        this.topColor = color;
-        this.topNumber = number;
+        this.discardTop = { color, number };
+    }
+
+    getTop(): Card {
+        return this.discardTop;
     }
 }

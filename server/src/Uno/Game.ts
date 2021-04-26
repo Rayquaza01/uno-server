@@ -1,3 +1,4 @@
+import { GameState, PlayerInfo } from "../GameAPI/APITypes";
 import { CardColors } from "./CardColors";
 import { CardNumbers } from "./CardNumbers";
 import { UnoDeck } from "./Deck";
@@ -14,6 +15,8 @@ export class UnoGame {
     private currentPlayer: number;
     private playerOrder: number;
     private gameRunning: boolean;
+    private winner: number | null;
+    private lastUpdated: Date;
 
     constructor() {
         this.gameRunning = false;
@@ -25,6 +28,27 @@ export class UnoGame {
 
         this.currentPlayer = 0;
         this.playerOrder = 1;
+
+        this.winner = null;
+
+        this.lastUpdated = new Date();
+    }
+
+    getGameState(): GameState {
+        return {
+            lastModified: this.lastUpdated.getTime(),
+            currentPlayer: this.currentPlayer,
+            gameRunning: this.gameRunning,
+            winner: this.winner,
+            discard: this.unoDeck.getTop(),
+            players: this.players.map(i => i.hand.length)
+        };
+    }
+
+    getPlayerInfo(): PlayerInfo[] {
+        return this.players.map(item => {
+            return { name: item.name, hand: item.hand.length }
+        })
     }
 
     /**
@@ -40,6 +64,10 @@ export class UnoGame {
 
         this.currentPlayer = 0;
         this.playerOrder = 1;
+
+        this.winner = null;
+
+        this.lastUpdated = new Date();
     }
 
     /**
@@ -56,10 +84,8 @@ export class UnoGame {
         }
 
         return this.players.length - 1;
-    }
 
-    getPlayers(): readonly Player[] { 
-        return this.players;
+        this.lastUpdated = new Date();
     }
 
     getPlayer(id: number): Player | undefined {
@@ -76,6 +102,7 @@ export class UnoGame {
         }
         this.unoDeck.discard(this.unoDeck.draw());
         this.gameRunning = true;
+        this.lastUpdated = new Date();
     }
 
     /**
@@ -86,7 +113,10 @@ export class UnoGame {
      * @returns True if the card was discarded, false if the card couldn't be discarded
      */
     discard(p: number, c: number, wild?: CardColors): boolean {
-        if (p !== this.currentPlayer) {
+        // if the player trying to discard is not the current player
+        // OR if the game is not running
+        // fail to discard
+        if (p !== this.currentPlayer || !this.gameRunning) {
             return false;
         }
 
@@ -124,6 +154,13 @@ export class UnoGame {
         // advance next player
         this.currentPlayer = this.nextPlayer();
 
+        this.lastUpdated = new Date();
+
+        if (this.players.find(i => i.hand.length === 0)) {
+            this.gameRunning = false;
+            this.winner = p;
+        }
+
         return true;
     }
 
@@ -143,5 +180,6 @@ export class UnoGame {
         for (let i = 0; i < n; i++) {
             this.players[p].hand.push(this.unoDeck.draw());
         }
+        this.lastUpdated = new Date();
     }
 }
