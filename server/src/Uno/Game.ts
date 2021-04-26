@@ -4,7 +4,7 @@ import { CardNumbers } from "./CardNumbers";
 import { UnoDeck } from "./Deck";
 import { Player } from "./Player";
 
-function mod(a: number, b: number) {
+function mod(a: number, b: number): number {
     return ((a % b) + b) % b;
 }
 
@@ -47,14 +47,14 @@ export class UnoGame {
 
     getPlayerInfo(): PlayerInfo[] {
         return this.players.map(item => {
-            return { name: item.name, hand: item.hand.length }
-        })
+            return { name: item.name, hand: item.hand.length };
+        });
     }
 
     /**
      * Resets the game object
      */
-    resetGame() {
+    resetGame(): void {
         this.gameRunning = false;
 
         this.unoDeck = new UnoDeck();
@@ -120,7 +120,7 @@ export class UnoGame {
             return false;
         }
 
-        let card = this.players[p].hand[c];
+        const card = this.players[p].hand[c];
         // discard the card
         // return false if discarding is not possible
         if (!this.unoDeck.discard(card)) {
@@ -176,7 +176,7 @@ export class UnoGame {
      * @param p The index of the player to draw cards
      * @param n The number of cards to draw
      */
-    draw(p: number, n: number) {
+    draw(p: number, n: number): void {
         for (let i = 0; i < n; i++) {
             this.players[p].hand.push(this.unoDeck.draw());
         }

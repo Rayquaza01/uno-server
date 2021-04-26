@@ -5,5 +5,3 @@ export enum CardColors {
     BLUE,
     WILD
 }
-
-export type RealColors = Exclude<CardColors, CardColors.WILD>

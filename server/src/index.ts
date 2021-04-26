@@ -33,7 +33,7 @@ http.post("/game/register", (socket, headers, body) => {
         return;
     }
 
-    let player: Player = { name: bodyJSON.name, hand: [] };
+    const player: Player = { name: bodyJSON.name, hand: [] };
     game.addPlayer(player.name);
 
     socket.write(JSON.stringify(player), { "Content-Type": MIME_TYPES[".json"] }, 200);
@@ -125,9 +125,9 @@ http.post("/game/discard", (socket, headers, body) => {
 
 // Request the game's status
 http.get("/game/status", (socket, headers) => {
-    let status = game.getGameState();
+    const status = game.getGameState();
     socket.write(JSON.stringify(status), { "Content-Type": MIME_TYPES[".json"] }, 200);
-})
+});
 
 http.static("../game/dist");
 
