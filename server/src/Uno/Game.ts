@@ -41,7 +41,8 @@ export class UnoGame {
             gameRunning: this.gameRunning,
             winner: this.winner,
             discard: this.unoDeck.getTop(),
-            players: this.players.map(i => i.hand.length)
+            players: this.players.map(i => i.hand.length),
+            playerOrder: this.playerOrder
         };
     }
 
@@ -131,7 +132,7 @@ export class UnoGame {
         this.players[p].hand.splice(c, 1);
 
         // if wild is specified, set the top card to be the specified color
-        if (wild !== undefined) {
+        if (wild !== undefined && card.color === CardColors.WILD) {
             this.unoDeck.updateTop(wild, card.number);
         }
 

@@ -34,7 +34,6 @@ export const MIME_TYPES = {
     "*": "application/octet-stream"
 };
 
-
 /**
  * An HTTP server class
  */

@@ -136,8 +136,6 @@ if (process.argv.length < 4) {
     process.exit();
 }
 
-console.log(process.argv);
-
 http.static(process.argv[2]);
 
 server.listen(Number(process.argv[3]), "127.0.0.1");

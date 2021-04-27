@@ -75,6 +75,7 @@ export interface GameState {
     winner: number | null
     discard: Card
     players: number[]
+    playerOrder: number
 }
 
 export function isGameState(o: any): o is GameState {
