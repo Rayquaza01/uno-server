@@ -1,2 +1,4 @@
 require("./index.css");
-console.log("hi");
+import { UnoClient } from "./UnoClient/Client";
+
+let client: UnoClient;
