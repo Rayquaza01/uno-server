@@ -8,26 +8,41 @@
 </head>
 
 <body>
-    <div class="wrapper">
-        <div id="discard">
-            Discard pile
-            <img class="card" src="images/sample-card.png">
+    <div class="gameWrapper">
+        <div class="wrapper">
+            <div id="discard">
+                Discard Pile
+                <img id="discardCard" class="card" src="images/uno_WILD_WILD.svg">
+            </div>
+            <div id="players"></div>
         </div>
-        <div id="players">
-            <ul>
-                <li>P1</li>
-                <li>P2</li>
-                <li>P3</li>
-                <li>P4</li>
-            </ul>
+        <div class="gameButtons">
+            <button id="draw">Draw Card</button>
+            <button id="reset">Reset Game</button>
         </div>
+        <div class="registration">
+            <input type="text" id="nameInput">
+            <button id="registerSubmit">Register</button>
+            <button id="start">Start Game</button>
+        </div>
+        <div id="hand"></div>
     </div>
-    <div id="hand">
-        <img class="card" src="images/sample-card.png">
-        <img class="card" src="images/sample-card.png">
-        <img class="card" src="images/sample-card.png">
-        <img class="card" src="images/sample-card.png">
-        <img class="card" src="images/sample-card.png">
+
+    <div id="popup">
+        <span class="popupText">
+            Player 1's Turn
+        </span>
+        <div class="wildButtons">
+            Set Wild Color:<br>
+            <select id="wildSelect">
+                <option value="RED">Red</option>
+                <option value="YELLOW">Yellow</option>
+                <option value="GREEN">Green</option>
+                <option value="BLUE">Blue</option>
+            </select>
+            <button id="wildSubmit">Submit</button>
+            <button id="wildCancel">Cancel</button>
+        </div>
     </div>
 </body>
 

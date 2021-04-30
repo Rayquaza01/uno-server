@@ -6,7 +6,7 @@
   "scripts": {
     "build:development": "webpack --config webpack.config.js --mode=development --watch",
     "build:production": "webpack --config webpack.config.js --mode=production",
-    "start": "./startServer.sh"
+    "start": "uno-server ./dist 5000"
   },
   "author": "Joe Jarvis",
   "license": "MIT",

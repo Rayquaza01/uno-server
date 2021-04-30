@@ -1,19 +1,60 @@
-.wrapper {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    grid-auto-rows: minmax(100px, auto);
+body {
+    background-color: green;
+    color: white;
+    font-family: sans-serif;
 
+    margin: 0;
+}
+
+body, html {
+    height: 100%;
+}
+
+.gameWrapper {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.wrapper {
     padding-bottom: 100px;
+    flex-grow: 1;
 }
 
 #discard {
     display: flex;
     flex-direction: column;
+    background-color: darkgreen;
+    float: left;
+    text-align: center;
+
+    padding: 10px;
 }
 
 #players {
     text-align: right;
+    float: right;
+
+    padding: 10px;
+
+    background-color:  darkgreen;
+}
+
+.playerRow.current {
+    background-color: darkred;
+}
+
+.playerRow.next {
+    background-color: darkgoldenrod;
+}
+
+.playerName {
+    padding-right: 10px;
+    border-right: 1px solid lime;
+}
+
+.playerHand {
+    padding-left: 10px;
 }
 
 #hand {
@@ -25,10 +66,14 @@
     display: flex;
     flex-direction: row;
     align-items: flex-start;
+
+    background-color: darkgreen;
+
+    clear: both;
 }
 
 .card {
-    width: 100px;
+    width: 70px;
     height: auto;
     padding-top: 20px;
     padding-left: 5px;
@@ -37,4 +82,38 @@
 
 .active {
     padding-top: 0;
+}
+
+#popup {
+    z-index: 2;
+    height: 25%;
+    width: 0;
+    /* width: 100%; */
+    position: absolute;
+    top: 37.5%;
+    left: 0;
+    overflow-x: hidden;
+
+    transition: 1s;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: darkgreen;
+
+    font-size: 20px;
+}
+
+.gameButtons,
+.registration {
+    display: inherit;
+    font-size: 20px;
+}
+
+.wildButtons {
+    display: none;
+}
+
+.gameButtons {
+    display: none;
 }
