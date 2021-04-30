@@ -40,7 +40,7 @@ http.post("/game/register", (socket, _headers, body) => {
 // Forces the game to start
 http.post("/game/start", (socket) => {
     game.startGame();
-    const res: APITypes.GenericResponse = { success: true }
+    const res: APITypes.GenericResponse = { success: true };
     socket.write(JSON.stringify(res), { "Content-Type": MIME_TYPES[".json"] }, 200);
 });
 
