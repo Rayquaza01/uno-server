@@ -1,5 +1,5 @@
 import { Card, isCard } from "../Uno/Card";
-import { CardColors } from "../Uno/CardColors";
+import { CardColors, isCardColors } from "../Uno/CardColors";
 import { isPlayer, Player } from "../Uno/Player";
 
 export interface GenericResponse {
@@ -30,7 +30,7 @@ export function isRegisterResponse(o: any): o is RegisterResponse {
 
 export interface DiscardBody {
     id: number
-    card: number
+    card: number | null
     wild?: CardColors
 }
 
@@ -38,7 +38,7 @@ export function isDiscardBody(o: any): o is DiscardBody {
     // if o.id is a string AND
     // if o.card is a number AND
     // if o.wild is undefined OR o.wild is a card number
-    return typeof o.id === "string" && typeof o.card === "number" && (typeof o.wild === "undefined" || typeof CardColors[o.wild] === "string");
+    return typeof o.id === "number" && (typeof o.card === "number" || o.card === null) && (typeof o.wild === "undefined" || isCardColors(o.wild));
 }
 
 export enum DiscardResposeReason {

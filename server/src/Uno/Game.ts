@@ -34,6 +34,9 @@ export class UnoGame {
         this.lastUpdated = new Date();
     }
 
+    /**
+     * Gets an overview of the current state of the game
+     */
     getGameState(): GameState {
         return {
             lastModified: this.lastUpdated.getTime(),
@@ -46,6 +49,9 @@ export class UnoGame {
         };
     }
 
+    /**
+     * Gets an overview of players, with their names and hand lengths
+     */
     getPlayerInfo(): PlayerInfo[] {
         return this.players.map(item => {
             return { name: item.name, hand: item.hand.length };
@@ -81,14 +87,20 @@ export class UnoGame {
         if (!this.gameRunning) {
             this.players.push({name, hand: []});
             this.maxPlayers++;
-            return -1;
+
+            this.lastUpdated = new Date();
+
+            return this.players.length - 1;
         }
 
-        return this.players.length - 1;
-
-        this.lastUpdated = new Date();
+        return -1;
     }
 
+    /**
+     * Get a player at a given id
+     * @param id The id of the player to get
+     * @returns The player object if it was found, undefined otherwise
+     */
     getPlayer(id: number): Player | undefined {
         return this.players[id];
     }
@@ -98,6 +110,8 @@ export class UnoGame {
      * Deals 5 cards to each player's hand and initializes the discard pile
      */
     startGame(): void {
+        if (this.gameRunning) return;
+
         for (let i = 0; i < this.maxPlayers; i++) {
             this.draw(i, 5);
         }
@@ -113,11 +127,27 @@ export class UnoGame {
      * @param wild (optional) The color to make the card if the card is wild
      * @returns True if the card was discarded, false if the card couldn't be discarded
      */
-    discard(p: number, c: number, wild?: CardColors): boolean {
+    discard(p: number, c: number | null, wild?: CardColors): boolean {
         // if the player trying to discard is not the current player
         // OR if the game is not running
         // fail to discard
         if (p !== this.currentPlayer || !this.gameRunning) {
+            return false;
+        }
+
+        // if card to discard is null, player wants to draw a card
+        if (c === null) {
+            // can only draw a card if no card in hand can be discarded
+            // check the discardability of each card
+            if (this.players[p].hand.every(item => !this.unoDeck.discard(item, false))) {
+                // draw a new card and move to the next player
+                this.draw(p, 1);
+                this.currentPlayer = this.nextPlayer();
+
+                this.lastUpdated = new Date();
+
+                return true;
+            }
             return false;
         }
 
@@ -140,9 +170,11 @@ export class UnoGame {
         switch (card.number) {
             case CardNumbers.ADD_2:
                 this.draw(this.nextPlayer(), 2);
+                this.currentPlayer = this.nextPlayer();
                 break;
             case CardNumbers.ADD_4:
                 this.draw(this.nextPlayer(), 4);
+                this.currentPlayer = this.nextPlayer();
                 break;
             case CardNumbers.SKIP:
                 this.currentPlayer = this.nextPlayer();
@@ -155,12 +187,15 @@ export class UnoGame {
         // advance next player
         this.currentPlayer = this.nextPlayer();
 
-        this.lastUpdated = new Date();
 
+        // Check all players
+        // If there is a player with no cards, declare them the winner
         if (this.players.find(i => i.hand.length === 0)) {
             this.gameRunning = false;
             this.winner = p;
         }
+
+        this.lastUpdated = new Date();
 
         return true;
     }
@@ -181,6 +216,30 @@ export class UnoGame {
         for (let i = 0; i < n; i++) {
             this.players[p].hand.push(this.unoDeck.draw());
         }
+
+        // sort hand so that cards appear in order client-side
+        // sort by colors first, falling back to numbers if the colors are the same
+        this.players[p].hand.sort((a, b) => {
+            // color sorting
+            if (a.color < b.color) {
+                return -1;
+            } else if (a.color > b.color) {
+                return 1;
+            }
+
+            // colors must be equal
+
+            // number sorting
+            if (a.number < b.number) {
+                return -1;
+            } else if (a.number > b.number) {
+                return 1;
+            }
+
+            // color and number must be equal
+            return 0;
+        });
+
         this.lastUpdated = new Date();
     }
 }

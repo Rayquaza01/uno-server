@@ -81,9 +81,10 @@ export class UnoDeck {
     /**
      * Discards a card to the discard pile
      * @param c The card to discard
+     * @param commit Should the card actually be discarded?
      * @returns true if the card can be discarded, false if the card is not valid
      */
-    discard(c: Card): boolean {
+    discard(c: Card, commit = true): boolean {
         // check if card can be discarded
         // card can be discarded if:
         //  Colors match
@@ -91,8 +92,10 @@ export class UnoDeck {
         //  Color is WILD
         //  Top color is WILD
         if (c.color === this.discardTop.color || c.number === this.discardTop.number || c.color === CardColors.WILD || this.discardTop.color === CardColors.WILD) {
-            this.discardDeck.push(c);
-            this.updateTop(c.color, c.number);
+            if (commit) {
+                this.discardDeck.push(c);
+                this.updateTop(c.color, c.number);
+            }
             return true;
         }
         return false;

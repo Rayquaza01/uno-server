@@ -2,7 +2,6 @@ import net from "net";
 import { HTTPServer, MIME_TYPES } from "./HTTP/HTTP";
 import { getReasonString } from "./HTTP/HTTPSocket";
 import { UnoGame } from "./Uno/Game";
-import { Player } from "./Uno/Player";
 import * as APITypes from "./GameAPI/APITypes";
 
 const game = new UnoGame();
@@ -33,22 +32,23 @@ http.post("/game/register", (socket, _headers, body) => {
         return;
     }
 
-    const player: Player = { name: bodyJSON.name, hand: [] };
-    game.addPlayer(player.name);
-
+    const id = game.addPlayer(bodyJSON.name);
+    const player: APITypes.RegisterResponse = { id, name: bodyJSON.name, hand: []};
     socket.write(JSON.stringify(player), { "Content-Type": MIME_TYPES[".json"] }, 200);
 });
 
 // Forces the game to start
 http.post("/game/start", (socket) => {
     game.startGame();
-    socket.write(JSON.stringify({ success: true }), { "Content-Type": MIME_TYPES[".json"] }, 200);
+    const res: APITypes.GenericResponse = { success: true }
+    socket.write(JSON.stringify(res), { "Content-Type": MIME_TYPES[".json"] }, 200);
 });
 
 // Forces the game to reset
 http.post("/game/reset", (socket) => {
     game.resetGame();
-    socket.write(JSON.stringify({ success: true }), {}, 200);
+    const res: APITypes.GenericResponse = { success: true };
+    socket.write(JSON.stringify(res), {}, 200);
 });
 
 // Gets players in the game
@@ -86,13 +86,16 @@ http.post("/game/discard", (socket, _headers, body) => {
         return;
     }
 
+    let res: APITypes.DiscardResponse;
+
     // if player ID can't be found, send PLAYER_NOT_FOUND error
     if (!game.getPlayer(bodyJSON.id)) {
+        res = {
+            success: false,
+            reason: APITypes.DiscardResposeReason.PLAYER_NOT_FOUND
+        };
         socket.write(
-            JSON.stringify({
-                success: false,
-                reason: APITypes.DiscardResposeReason.PLAYER_NOT_FOUND
-            }),
+            JSON.stringify(res),
             { "Content-Type": MIME_TYPES[".json"] },
             200
         );
@@ -102,22 +105,24 @@ http.post("/game/discard", (socket, _headers, body) => {
     // discard the card
     // if discard fails, send INVALID_DISCARD error
     if (!game.discard(bodyJSON.id, bodyJSON.card, bodyJSON.wild)) {
+        res = {
+            success: false,
+            reason: APITypes.DiscardResposeReason.INVALID_DISCARD
+        };
         socket.write(
-            JSON.stringify({
-                success: false,
-                reason: APITypes.DiscardResposeReason.INVALID_DISCARD
-            }),
+            JSON.stringify(res),
             { "Content-Type": MIME_TYPES[".json"] },
             200
         );
     }
 
     // if discard succeeded, send OK response
+    res = {
+        success: true,
+        reason: APITypes.DiscardResposeReason.OK
+    };
     socket.write(
-        JSON.stringify({
-            success: true,
-            reason: APITypes.DiscardResposeReason.OK
-        }),
+        JSON.stringify(res),
         { "Content-Type": MIME_TYPES[".json"] },
         200
     );
@@ -138,4 +143,4 @@ if (process.argv.length < 4) {
 
 http.static(process.argv[2]);
 
-server.listen(Number(process.argv[3]), "127.0.0.1");
+server.listen(Number(process.argv[3]), "0.0.0.0");
