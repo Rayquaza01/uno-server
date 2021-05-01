@@ -234,8 +234,4 @@ export class HTTPServer {
             callback
         });
     }
-
-    listen(port: number, ip: string): void {
-        this.server.listen(port, ip);
-    }
 }
